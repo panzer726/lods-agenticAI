@@ -1,0 +1,128 @@
+from groq import Groq
+import subprocess
+import json
+import time
+from memory import mem_saver
+from memory import mem_handler
+import threading
+import sys
+from dotenv import load_dotenv
+import os
+load_dotenv()
+from groq import Groq
+
+model = "openai/gpt-oss-120b"
+client = Groq(api_key=os.getenv('env'))
+
+def call_model(messages, tools):
+    try:
+        output = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=1,
+                max_completion_tokens=2048,
+                top_p=1,
+                tools=tools,
+        )
+        return output.choices[0].message
+    except Exception as e:
+        print(f"[ERROR calling model] {e}")
+        return None
+
+def append_msgs(role,content,tool_id=None):
+    msg = {"role": role, "content": content}
+    if tool_id is not None:
+        msg["tool_call_id"] = tool_id
+    msgs.append(msg)
+    convo.append(f"{role}: {content}")
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_python",
+            "description": "Run Python code for general purpose. Always print results.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {"type": "string", "description": "a very short python code to execute. Always print results."}
+                },
+                "required": ["code"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_shell",
+            "description": "Run Windows shell to interact with operating system.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "Windows CMD command only."}
+                },
+                "required": ["command"]
+            }
+        }
+    }
+]
+
+def run_shell(command):
+    result = subprocess.run(command,shell=True,capture_output=True,text=True,)
+    return result.stdout + result.stderr
+
+def run_python(code):
+    result = subprocess.run(code,shell=True,capture_output=True,text=True,)
+    return result.stdout + result.stderr
+
+def handle_message(source,user_msg):
+    append_msgs("user",user_msg)
+    #threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
+    output = call_model(msgs,tools)
+
+    while output.tool_calls:
+        tool = output.tool_calls[0]
+        msgs.append(output)
+        output = run_tools(tool.function, tool.id, json.loads(tool.function.arguments))
+
+    append_msgs("assistant",output.content)
+    return(output.content)
+    #print("Lods:",output.content)
+
+
+def run_tools(tool, id, args):
+    match tool.name:
+
+        case "run_python":
+            print("[running python]", args["code"])
+            result = run_python(args["code"])
+            append_msgs("tool", result, id)
+
+        case "run_shell":
+            print("[running shell command",args["command"],"]")
+            shell_result = run_shell(args["command"])
+            append_msgs("tool", shell_result, id)
+
+        case _:
+            append_msgs("tool", f"Unknown tool: {tool.name}", id)
+
+    return call_model(msgs,tools)
+
+prompt = """
+Limit response to 1-3 sentence unless needed otherwise.
+You are in windows 11.
+
+You have access to:
+- './memory/messenger_logs.db' (SQLite. stores all chat from messenger.):
+   TABLE messages: id, thread_id, thread_name, is_group(0/1), sender, content, timestamp(epoch second)
+- './memory/messenger_currentstate.json' (shows most recent chat per each group/friend):
+   list of {thread_id, thread_name, is_group, sender(sometimes empty), content, unread, timestamp}
+
+When asked to check messenger stats, use run_python to return unread count.
+
+"""
+
+convo = []
+msgs = [ {"role":"system","content":prompt}]
+
+
