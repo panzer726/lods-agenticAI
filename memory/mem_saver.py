@@ -6,7 +6,7 @@ from fastembed import TextEmbedding
 embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
 extractor = Llama(
-    model_path="models/Alibaba/qwen3.5-2b-Q4_K_M.gguf/qwen3.5-2b-Q4_K_M.gguf",
+    model_path="../models/Alibaba/qwen3.5-2b-Q4_K_M.gguf/qwen3.5-2b-Q4_K_M.gguf",
         n_ctx=4096,
         verbose=False,
         flash_attn=True,
@@ -17,7 +17,7 @@ extractor = Llama(
 )
 
 filter = Llama(
-    model_path="models/Alibaba/qwen2.5-0.5B-Instruct-Q4_K_M.gguf/qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
+    model_path="../models/Alibaba/qwen2.5-0.5B-Instruct-Q4_K_M.gguf/qwen2.5-0.5B-Instruct-Q4_K_M.gguf",
       n_ctx=1024,
       verbose=False,
       flash_attn=True,

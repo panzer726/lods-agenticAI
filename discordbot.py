@@ -3,7 +3,7 @@ import requests
 import json  
 from dotenv import load_dotenv
 import os
-load_dotenv()
+load_dotenv(override=True)
 
 
 intents = discord.Intents.default()
@@ -24,4 +24,4 @@ async def on_message(message):
     resp = requests.post("http://localhost:8000/message",json={"source":"discord","content":message.content})
     await message.channel.send(resp.json()["reply"])
 
-client.run( os.getenv("API_KEY") )
+client.run( os.getenv('discord_api_key') )

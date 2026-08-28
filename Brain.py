@@ -11,8 +11,30 @@ import os
 load_dotenv()
 from groq import Groq
 
+prompt = f"""
+Limit response to 1-3 sentence unless said otherwise.
+You are in windows 11.
+
+You have access to:
+- './memory/messenger_logs.db' (SQLite. stores all chat from messenger.):
+   TABLE messages: id, thread_id, thread_name, is_group(0/1), sender, content, timestamp(epoch second)
+- './memory/messenger_currentstate.json' (shows most recent chat per each group/friend):
+   list of {'{thread_id, thread_name, is_group, sender(sometimes empty), content, unread, timestamp}'}
+
+When asked to check messenger stats, use run_python to return unread count.
+
+MEMORIES:
+memory_here
+"""
+
+convo = []
+msgs = [ {"role":"system","content":prompt}]
+
+
+
+
 model = "openai/gpt-oss-120b"
-client = Groq(api_key=os.getenv('env'))
+client = Groq(api_key=os.getenv('groq_api_key'))
 
 def call_model(messages, tools):
     try:
@@ -77,7 +99,10 @@ def run_python(code):
 
 def handle_message(source,user_msg):
     append_msgs("user",user_msg)
-    #threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
+    global msgs
+    msgs = msgs[-7:]
+    
+    threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
     output = call_model(msgs,tools)
 
     while output.tool_calls:
@@ -107,22 +132,3 @@ def run_tools(tool, id, args):
             append_msgs("tool", f"Unknown tool: {tool.name}", id)
 
     return call_model(msgs,tools)
-
-prompt = """
-Limit response to 1-3 sentence unless needed otherwise.
-You are in windows 11.
-
-You have access to:
-- './memory/messenger_logs.db' (SQLite. stores all chat from messenger.):
-   TABLE messages: id, thread_id, thread_name, is_group(0/1), sender, content, timestamp(epoch second)
-- './memory/messenger_currentstate.json' (shows most recent chat per each group/friend):
-   list of {thread_id, thread_name, is_group, sender(sometimes empty), content, unread, timestamp}
-
-When asked to check messenger stats, use run_python to return unread count.
-
-"""
-
-convo = []
-msgs = [ {"role":"system","content":prompt}]
-
-
