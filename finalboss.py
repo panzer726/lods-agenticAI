@@ -24,14 +24,12 @@ def save_messenger_logs(chats): #wag na isave ang 'unread' ala kwinta
         ))
         conn.commit()
 
-
-
 @app.post("/message")
 def message(data: dict):
     source = data.get("source")   # "discord", "terminal", "messenger"
     content = data.get("content")
     
-    response = handle_message(source, content)
+    response = handle_message(content)
     return {"reply": response}
 
 @app.post("/event")

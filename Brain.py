@@ -1,61 +1,43 @@
 from groq import Groq
 import subprocess
 import json
-import time
 from memory import mem_saver
 from memory import mem_handler
 import threading
-import sys
 from dotenv import load_dotenv
 import os
 load_dotenv()
-from groq import Groq
 
-prompt = f"""
-Limit response to 1-3 sentence unless said otherwise.
-You are in windows 11.
+with open("system_prompts/main_prompt.txt",encoding="utf-8") as f:
+    prompt = f.read()
 
-You have access to:
-- './memory/messenger_logs.db' (SQLite. stores all chat from messenger.):
-   TABLE messages: id, thread_id, thread_name, is_group(0/1), sender, content, timestamp(epoch second)
-- './memory/messenger_currentstate.json' (shows most recent chat per each group/friend):
-   list of {'{thread_id, thread_name, is_group, sender(sometimes empty), content, unread, timestamp}'}
-
-When asked to check messenger stats, use run_python to return unread count.
-
-MEMORIES:
-memory_here
-"""
-
+model = "qwen/qwen3.8-27b"
+client = Groq(api_key=os.getenv('groq_api_key'))
 convo = []
 msgs = [ {"role":"system","content":prompt}]
 
-
-
-
-model = "openai/gpt-oss-120b"
-client = Groq(api_key=os.getenv('groq_api_key'))
-
-def call_model(messages, tools):
+def call_model():
     try:
         output = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=1,
-                max_completion_tokens=2048,
-                top_p=1,
-                tools=tools,
+            model=model,
+            messages=msgs,
+            temperature=1,
+            max_completion_tokens=2048,
+            top_p=1,
+            tools=tools,
+            reasoning_effort="none"
         )
+
         return output.choices[0].message
+    
     except Exception as e:
         print(f"[ERROR calling model] {e}")
-        return None
 
 def append_msgs(role,content,tool_id=None):
-    msg = {"role": role, "content": content}
+    msgs.append( {"role": role, "content": content} )
     if tool_id is not None:
-        msg["tool_call_id"] = tool_id
-    msgs.append(msg)
+        msgs[-1]["tool_call_id"] = tool_id
+
     convo.append(f"{role}: {content}")
 
 tools = [
@@ -89,6 +71,28 @@ tools = [
     }
 ]
 
+def handle_message(user_msg):
+    append_msgs("user",user_msg)
+    global msgs
+    msgs = [msgs[0], *msgs[1:][-7:]]
+
+    #threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
+    output = call_model()
+
+    if output is None:
+        return("ERROR: OUTPUT IS NONE")
+
+    while output.tool_calls:
+        tool = output.tool_calls[0]
+        msgs.append(output)
+        output = run_tools(tool.function, tool.id, json.loads(tool.function.arguments))
+        if output is None:
+            print("erororroro")
+            break
+
+    append_msgs("assistant",output.content)
+    return(output.content)
+
 def run_shell(command):
     result = subprocess.run(command,shell=True,capture_output=True,text=True,)
     return result.stdout + result.stderr
@@ -96,24 +100,6 @@ def run_shell(command):
 def run_python(code):
     result = subprocess.run(code,shell=True,capture_output=True,text=True,)
     return result.stdout + result.stderr
-
-def handle_message(source,user_msg):
-    append_msgs("user",user_msg)
-    global msgs
-    msgs = msgs[-7:]
-    
-    threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
-    output = call_model(msgs,tools)
-
-    while output.tool_calls:
-        tool = output.tool_calls[0]
-        msgs.append(output)
-        output = run_tools(tool.function, tool.id, json.loads(tool.function.arguments))
-
-    append_msgs("assistant",output.content)
-    return(output.content)
-    #print("Lods:",output.content)
-
 
 def run_tools(tool, id, args):
     match tool.name:
@@ -131,4 +117,4 @@ def run_tools(tool, id, args):
         case _:
             append_msgs("tool", f"Unknown tool: {tool.name}", id)
 
-    return call_model(msgs,tools)
+    return call_model()

@@ -46,9 +46,6 @@ def parse_thread(thread):
       }
       return payload
 
-
-chats = []
-
 with sync_playwright() as p:
       context = p.chromium.launch_persistent_context(
       './messenger-session',
@@ -60,7 +57,7 @@ with sync_playwright() as p:
 
       input("press any key to start")
 
-      last_state = {}  # thread_id -> preview text
+      last_state = {}
 
       print("listening...")
 
@@ -87,7 +84,6 @@ with sync_playwright() as p:
                         if prev is not None:
                               chats.append(data)
                               print(data)
-                              #print(f"{data['name']!r}: {data['content']!r}, {'GROUP' if data['is_group'] else 'USER'}")
 
             requests.post('http://localhost:8000/event',json={"source":"messenger", "chats":chats, "currentstate":currentstate})                         
             time.sleep(1)

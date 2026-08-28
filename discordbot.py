@@ -1,19 +1,16 @@
 import discord
-import requests   
-import json  
+import requests    
 from dotenv import load_dotenv
 import os
 load_dotenv(override=True)
 
-
 intents = discord.Intents.default()
 intents.message_content = True
-
 client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'chatbot is online')
 
 @client.event
 async def on_message(message):
