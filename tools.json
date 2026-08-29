@@ -1,0 +1,44 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "run_shell",
+            "description": "Run Windows shell to interact with operating system.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "Windows CMD command only."}
+                },
+                "required": ["command"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "manage_reminder",
+            "description": "create or finish a reminder to user",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {"type": "string", "enum": ["create", "finish"]},
+                    "trigger_time": {"type": "integer", "description": "How many seconds from now until the reminder should trigger."},
+                    "content": {"type": "string", "description": "A short description of the reminder"},
+                    "reply_to_user": {"type": "string", "description": "a short affirmation"}
+                },
+                "required": ["reply_to_user", "action", "trigger_time", "content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "view_reminders",
+            "description": "check incoming reminders",
+            "parameters": {
+                "type": "object",
+                "properties": {}
+            }
+        }
+    }
+]

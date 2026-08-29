@@ -14,6 +14,9 @@ import sqlite3
 with open("system_prompts/main_prompt.txt",encoding="utf-8") as f:
     prompt = f.read()
 
+with open("tools.json","r") as f:
+    tools = json.load(f)
+
 model = "openai/gpt-oss-20b"
 client = Groq(api_key=os.getenv('groq_api_key'))
 convo = []
@@ -47,51 +50,6 @@ def append_msgs(role, content, tool_id=None, tool_name=None):
 
     msgs.append(msg)
     convo.append(f"{role}: {content}")
-
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "run_shell",
-            "description": "Run Windows shell to interact with operating system.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "command": {"type": "string", "description": "Windows CMD command only."}
-                },
-                "required": ["command"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "manage_reminder",
-            "description": "create or finish a reminder to user",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "action": {"type": "string", "enum": ["create", "finish"]},
-                    "trigger_time": {"type": "integer", "description": "How many seconds from now until the reminder should trigger."},
-                    "content": {"type": "string", "description": "A short description of the reminder"},
-                    "reply_to_user": {"type": "string", "description": "a short affirmation"}
-                },
-                "required": ["reply_to_user", "action", "trigger_time", "content"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "view_reminders",
-            "description": "check incoming reminders",
-            "parameters": {
-                "type": "object",
-                "properties": {}
-            }
-        }
-    }
-]
 
 def handle_message(user_msg):
     global msgs
