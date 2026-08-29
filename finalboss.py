@@ -3,6 +3,9 @@ from Brain import handle_message
 import uvicorn
 import sqlite3
 import json
+import subprocess
+
+subprocess.Popen(["python", "reminder.py"])
 
 app = FastAPI()
 
@@ -34,9 +37,15 @@ def message(data: dict):
 
 @app.post("/event")
 def event(data: dict):
-    if data.get("source")=="messenger":
+    source = data.get("source")
+
+    if source=="messenger":
         write_currentstate(data.get("currentstate"))
         save_messenger_logs(data["chats"])
+
+    elif source=="reminder":
+        response = handle_message(data.get("content"))
+        subprocess.run(f'start /max cmd /k "@echo off & cls & echo {response}"', shell=True) #temporary reminder
     else:
         print(f"no source named: {data.get("source")}")
 
