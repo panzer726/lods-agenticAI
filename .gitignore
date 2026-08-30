@@ -1,2 +1,5 @@
 .env 
 .messenger-session
+__pycache__
+memory/__pycache__
+.vscode
