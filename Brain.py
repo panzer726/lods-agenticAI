@@ -137,6 +137,7 @@ def run_tools(tool, id, args):
             print("[created a reminder]")
             result = manage_reminders(args)
             append_msgs("tool", result, id, tool.name)
+            append_msgs("tool", "created/finished a reminder", id, tool.name)
             return SimpleNamespace( **{"content": result, "tool_calls": []} ) #kunyari galing sa llm yung dict
             
         case _:
