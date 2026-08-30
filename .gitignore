@@ -3,3 +3,6 @@
 /__pycache__
 memory/__pycache__
 .vscode
+memory/*.db
+memory/messenger_currentstate.json
+
