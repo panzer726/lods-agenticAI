@@ -134,10 +134,10 @@ def run_tools(tool, id, args):
             append_msgs("tool", reminder_list, id, tool.name)
 
         case "manage_reminder":
-            manage_reminders(args)
             print("[created a reminder]")
+            result = manage_reminders(args)
             append_msgs("tool", "created/finished a reminder", id, tool.name)
-            return SimpleNamespace( **{"content": args["reply_to_user"], "tool_calls": []} ) #kunyari galing sa llm yung dict
+            return SimpleNamespace( **{"content": result, "tool_calls": []} ) #kunyari galing sa llm yung dict
             
         case _:
             append_msgs("tool", f"Unknown tool: {tool.name}", id, tool.name)
