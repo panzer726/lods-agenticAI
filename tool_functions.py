@@ -83,6 +83,7 @@ def control_light(args):
         if args.get("bright_value") is not None:
             light.set_value(22, int(args["bright_value"]))
         if args.get("temp_value") is not None:
+            light.set_value(21, "white")
             light.set_value(23, int(args["temp_value"]))
         if args.get("colour_data"):
             tuya_color = rgb_hex_to_tuya(args["colour_data"])
