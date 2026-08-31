@@ -2,10 +2,14 @@ import subprocess
 import sqlite3
 import time
 import colorsys
+import os
+import json
+import dotenv
+dotenv.load_dotenv(override=True)
 
 import tinytuya
-light = tinytuya.OutletDevice('')
-light.set_version(3.5)  # or 3.4/3.5 depending on device
+light = tinytuya.OutletDevice('a36cb72d1945cf9235fcsy', '192.168.1.2', 'Ke;0MYt#GGtwb?+u')
+light.set_version(3.5) 
 
 from tavily import TavilyClient
 tavily_client = TavilyClient(api_key="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")
