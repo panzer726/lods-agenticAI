@@ -40,5 +40,45 @@
                 "properties": {}
             }
         }
+    },
+    {
+        "type": "function",
+        "function":{
+
+    "name": "control_light",
+    "description": "Controls light. Can turn it on/off, and adjust brightness or color temperature.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+        "device": {
+            "type": "string",
+            "enum": ["bedroom_overhead_light"],
+            "description": "Which light to control, and what lights are only available."
+        },
+        "switch_led": {
+            "type": "boolean",
+            "description": "Turn the light on (true) or off (false)."
+        },
+        "bright_value": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 1000,
+            "description": "Brightness level, 10 (dimmest) to 1000 (brightest). Only applies when switch_led is true."
+        },
+        "temp_value": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Color temperature, 0 (warm) to 1000 (cool). do not apply unless said otherwise."
+        },
+        "colour_data": {
+            "type": "string",
+            "description": "Optional HSV color string (hex-encoded: hue+saturation+value) if switching to colour mode."
+        }
+        },
+        "required": ["device"]
     }
+    }
+}
+  
 ]

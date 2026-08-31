@@ -119,6 +119,42 @@ def manage_reminders(args):
     conn.close()
     return args["reply_to_user"]
 
+import tinytuya
+light = tinytuya.OutletDevice('')
+light.set_version(3.5)  # or 3.4/3.5 depending on device
+
+import colorsys
+
+def rgb_hex_to_tuya(hex_color):
+    hex_color = hex_color.lstrip("#")
+    r, g, b = (int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+    hue = int(h * 360)
+    sat = int(s * 1000)
+    val = int(v * 1000)
+    return f"{hue:04x}{sat:04x}{val:04x}"
+
+
+def control_light(args):
+    try:
+        if args.get("switch_led") is not None:
+            light.set_status(args["switch_led"], 20)
+        if args.get("bright_value") is not None:
+            light.set_value(22, int(args["bright_value"]))
+        if args.get("temp_value") is not None:
+            light.set_value(23, int(args["temp_value"]))
+        if args.get("colour_data"):
+            tuya_color = rgb_hex_to_tuya(args["colour_data"])
+            light.set_value(21, "colour")
+            light.set_value(24, tuya_color)
+            print("raw from model:", args["colour_data"])
+            print("converted for device:", tuya_color)
+
+        return "success"
+    
+    except Exception as e:
+        print(e)
+        return e
 
 def run_tools(tool, id, args):
     match tool.name:
@@ -135,10 +171,17 @@ def run_tools(tool, id, args):
 
         case "manage_reminder":
             print("[created a reminder]")
-            result = manage_reminders(args)
+            result = manage_reminders(args) # needs fix
             append_msgs("tool", result, id, tool.name)
             append_msgs("tool", "created/finished a reminder", id, tool.name)
             return SimpleNamespace( **{"content": result, "tool_calls": []} ) #kunyari galing sa llm yung dict
+                                            # change result to 'success' since redundant sya
+
+        case "control_light":
+            print("[modifying light]")
+            result = control_light(args)
+            append_msgs("tool", result, id, tool.name)
+
             
         case _:
             append_msgs("tool", f"Unknown tool: {tool.name}", id, tool.name)
