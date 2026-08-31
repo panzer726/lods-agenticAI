@@ -1,4 +1,4 @@
-import tensorflow_hub as hub
+import tensorflow as tf
 import numpy as np
 import sounddevice as sd
 import librosa
@@ -9,7 +9,7 @@ import tinytuya
 light = tinytuya.OutletDevice('a36cb72light1945cf9235fcsy', '192.168.1.2', 'Ke;0MYt#GGtwb?+u')
 light.set_version(3.5)
 
-model = hub.load('https://tfhub.dev/google/yamnet/1')
+model = tf.saved_model.load('./yamnet_local')
 class_map_path = model.class_map_path().numpy()
 class_names = [line.split(',')[2] for line in open(class_map_path).read().splitlines()[1:]]
 clap_index = class_names.index('Clapping')
@@ -24,7 +24,7 @@ DOUBLE_CLAP_WINDOW = 1.0
 
 buffer = deque(maxlen=int(BUFFER_SECONDS * NATIVE_RATE))
 
-def audio_callback(indata, frames, time_info, status):
+def audio_callback(indata):
     buffer.extend(indata[:, 0])
 
 stream = sd.InputStream(samplerate=NATIVE_RATE, channels=1, dtype='float32', callback=audio_callback)

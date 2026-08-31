@@ -2,8 +2,6 @@ import subprocess
 import sqlite3
 import time
 import colorsys
-import os
-import json
 import dotenv
 dotenv.load_dotenv(override=True)
 

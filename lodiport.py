@@ -1,5 +1,4 @@
 import requests
-import json
 session = requests.Session()
 import time
 
