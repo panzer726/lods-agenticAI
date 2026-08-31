@@ -43,6 +43,20 @@
     },
     {
         "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Use a search engine to search for current information you do not have or that may have changed since your knowledge cutoff, or anywhere recency matters.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "the query to be searched"}
+                },
+            "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
         "function":{
 
     "name": "control_light",

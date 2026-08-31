@@ -11,6 +11,9 @@ load_dotenv(override=True)
 from types import SimpleNamespace
 import sqlite3
 
+from tavily import TavilyClient
+tavily_client = TavilyClient(api_key="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")
+
 with open("system_prompts/main_prompt.txt",encoding="utf-8") as f:
     prompt = f.read()
 
@@ -119,6 +122,17 @@ def manage_reminders(args):
     conn.close()
     return args["reply_to_user"]
 
+def web_search(query):
+    response = tavily_client.search(query,max_results=3,search_depth="advanced")
+    output = ""
+    for result in response["results"]:
+        output+= result["title"] + "\n"
+        output+= result["url"] + "\n"
+        output+=result["content"][:350].replace("\n","") + "..." + "\n"
+        output+="=======================" + "\n"
+    print(output)
+    return output
+
 import tinytuya
 light = tinytuya.OutletDevice('')
 light.set_version(3.5)  # or 3.4/3.5 depending on device
@@ -176,6 +190,11 @@ def run_tools(tool, id, args):
             append_msgs("tool", "created/finished a reminder", id, tool.name)
             return SimpleNamespace( **{"content": result, "tool_calls": []} ) #kunyari galing sa llm yung dict
                                             # change result to 'success' since redundant sya
+        case "web_search":
+            print("[searching the web]")
+            search_result = web_search(args["query"])
+            append_msgs("tool", search_result, id, tool.name)
+            print(msgs,"HAHAHA", args["query"])
 
         case "control_light":
             print("[modifying light]")
