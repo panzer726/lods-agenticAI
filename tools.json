@@ -60,7 +60,7 @@
         "function":{
 
     "name": "control_light",
-    "description": "Controls light. Can turn it on/off, and adjust brightness or color temperature.",
+    "description": "Controls light. Can turn it on/off, and adjust brightness or color temperature. Only adjust settings that are mentioned.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -77,7 +77,7 @@
             "type": "integer",
             "minimum": 10,
             "maximum": 1000,
-            "description": "Brightness level, 10 (dimmest) to 1000 (brightest). Only applies when switch_led is true."
+            "description": "Brightness level, 10 (dimmest) to 1000 (brightest)."
         },
         "temp_value": {
             "type": "integer",
@@ -87,7 +87,7 @@
         },
         "colour_data": {
             "type": "string",
-            "description": "Optional HSV color string (hex-encoded: hue+saturation+value) if switching to colour mode."
+            "description": "the color, in #RRGGBB hex. do not apply unless said otherwise."
         }
         },
         "required": ["device"]

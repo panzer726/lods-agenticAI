@@ -64,34 +64,61 @@ def web_search(query):
     print(output)
     return output
 
-def rgb_hex_to_tuya(hex_color):
+
+import colorsys
+def rgbhex_to_huesat(hex_color):
     hex_color = hex_color.lstrip("#")
     r, g, b = (int(hex_color[i:i+2], 16) for i in (0, 2, 4))
     h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
     hue = int(h * 360)
     sat = int(s * 1000)
-    val = int(v * 1000)
-    return f"{hue:04x}{sat:04x}{val:04x}"
+    return f"{hue:04x}{sat:04x}"
 
-
+# on or off         (20)  :   True/False
+# mode              (21)  :   'white'/'colour'
+# white brightness  (22)  :   (0,1000)
+# temp color        (23)  :   (0,1000)
+# hue, sat, bright  (24)  :   [0:4] + [4:8] + [8:12] (naka hexadecimal format)
 def control_light(args):
     try:
+        status = light.status()['dps']
+        #============================================================================#
         if args.get("switch_led") is not None:
-            light.set_status(args["switch_led"], 20)
-        if args.get("bright_value") is not None:
-            light.set_value(22, int(args["bright_value"]))
+            light.set_status(args["switch_led"], '20')
+        #============================================================================#
         if args.get("temp_value") is not None:
-            light.set_value(21, "white")
-            light.set_value(23, int(args["temp_value"]))
-        if args.get("colour_data"):
-            tuya_color = rgb_hex_to_tuya(args["colour_data"])
-            light.set_value(21, "colour")
-            light.set_value(24, tuya_color)
-            print("raw from model:", args["colour_data"])
-            print("converted for device:", tuya_color)
+            light.set_value('21', 'white') #para sa white mode lang ang temp settings
 
+            light.set_value('23', args['temp_value'])
+        #============================================================================#
+        if args.get("colour_data"):
+            light.set_value('21', 'colour')
+            hue_sat = rgbhex_to_huesat(args["colour_data"])
+
+            current_bright_hex = ""
+            if status.get(21) == "white":
+                current_bright_hex = format(status.get('22'), '04x')
+            elif status.get(21) == "colour":
+                current_bright_hex = status.get('24')[8:]
+
+            light.set_value('24', hue_sat + current_bright_hex)
+        #============================================================================#
+        if args.get("bright_value") is not None:
+            status = light.status()['dps']
+            match status.get('21'):   # colour mode o white mode?
+
+                case 'colour':
+                    hue_sat = status.get('24')[:8]   # current hue + sat
+                    bright_value = format(args['bright_value'], '04x') 
+                    light.set_value( '24', hue_sat + bright_value )
+
+                case 'white':
+                    light.set_value('22', args["bright_value"])
+                    
+        #============================================================================#
+        print(args)
         return "success"
-    
+
     except Exception as e:
         print(e)
-        return e
+        return str(e)
