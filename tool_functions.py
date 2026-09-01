@@ -96,19 +96,19 @@ def control_light(args):
             hue_sat = rgbhex_to_huesat(args["colour_data"])
 
             current_bright_hex = ""
-            if status.get(21) == "white":
+            if status['21'] == "white":
                 current_bright_hex = format(status.get('22'), '04x')
-            elif status.get(21) == "colour":
-                current_bright_hex = status.get('24')[8:]
+            elif status['21'] == "colour":
+                current_bright_hex = status['24'][8:]
 
             light.set_value('24', hue_sat + current_bright_hex)
         #============================================================================#
         if args.get("bright_value") is not None:
             status = light.status()['dps']
-            match status.get('21'):   # colour mode o white mode?
+            match status['21']:   # colour mode o white mode?
 
                 case 'colour':
-                    hue_sat = status.get('24')[:8]   # current hue + sat
+                    hue_sat = status['24'][:8]   # current hue + sat
                     bright_value = format(args['bright_value'], '04x') 
                     light.set_value( '24', hue_sat + bright_value )
 
