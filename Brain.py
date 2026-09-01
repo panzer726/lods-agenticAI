@@ -16,11 +16,13 @@ with open("system_prompts/main_prompt.txt",encoding="utf-8") as f:
 with open("tools.json","r") as f:
     tools = json.load(f)
 
-model = "openai/gpt-oss-20b"
+model = "openai/gpt-oss-120b"
 client = Groq(api_key=os.getenv('groq_api_key'))
 convo = []
 msgs = [ {"role":"system","content":prompt}]
 
+#=============================================================================#
+#=============================================================================#
 def call_model():
     try:
         output = client.chat.completions.create(
@@ -37,7 +39,8 @@ def call_model():
     
     except Exception as e:
         print(f"[ERROR calling model] {e}")
-
+#=============================================================================#
+#=============================================================================#
 def append_msgs(role, content, tool_id=None, tool_name=None):
     msg = {"role": role, "content": content}
     
@@ -49,7 +52,8 @@ def append_msgs(role, content, tool_id=None, tool_name=None):
 
     msgs.append(msg)
     convo.append(f"{role}: {content}")
-
+#=============================================================================#
+#=============================================================================#
 def handle_message(user_msg):
     global msgs
 
@@ -59,26 +63,27 @@ def handle_message(user_msg):
 
     append_msgs("user",user_msg)
     msgs[0]["content"] = prompt + "TIME: " + time.strftime("%I:%M %p, %b %d %Y")
-    msgs = [msgs[0], *msgs[1:][-7:]]
+    msgs = [msgs[0], *msgs[1:][-9:]]
 
     #threading.Thread(target=mem_saver.save,args=(convo[-6:],),daemon=True,).start()
     output = call_model()
-
     if output is None:
         return("ERROR: OUTPUT IS NONE")
 
     while output.tool_calls:
-        if output is None:
-            print("erororroro")
-            break
-        tool = output.tool_calls[0]
-        
         msgs.append(output)
-        output = run_tools(tool.function, tool.id, json.loads(tool.function.arguments))
+
+        for tool in output.tool_calls:
+            run_tools(tool.function, tool.id, json.loads(tool.function.arguments))
+
+        output = call_model()
+        if output is None:
+            return("ERROR: OUTPUT IS NONE")
 
     append_msgs("assistant",output.content)
-    return(output.content)
-
+    return output.content if output.content else "AI has nothing to say"
+#=============================================================================#
+#=============================================================================#
 def run_tools(tool, id, args):
     match tool.name:
 
@@ -93,12 +98,10 @@ def run_tools(tool, id, args):
             append_msgs("tool", reminder_list, id, tool.name)
 
         case "manage_reminder":
-            print("[created a reminder]")
-            result = manage_reminders(args) # needs fix
+            result = manage_reminders(args)
+            print(f"[{result}]")
             append_msgs("tool", result, id, tool.name)
-            append_msgs("tool", "created/finished a reminder", id, tool.name)
-            return SimpleNamespace( **{"content": result, "tool_calls": []} ) #kunyari galing sa llm yung dict
-                                            # change result to 'success' since redundant sya
+        
         case "web_search":
             print("[searching the web]")
             search_result = web_search(args["query"])
@@ -110,8 +113,7 @@ def run_tools(tool, id, args):
             result = control_light(args)
             append_msgs("tool", result, id, tool.name)
 
-            
         case _:
             append_msgs("tool", f"Unknown tool: {tool.name}", id, tool.name)
-
-    return call_model()
+#=============================================================================#
+#=============================================================================#

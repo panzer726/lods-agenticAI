@@ -51,7 +51,7 @@ def manage_reminders(args):
             conn.commit()
 
     conn.close()
-    return args["reply_to_user"]
+    return args["action"] + " reminder: " + args["content"]
 
 def web_search(query):
     response = tavily_client.search(query,max_results=3,search_depth="advanced")

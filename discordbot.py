@@ -17,8 +17,9 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print(message.content)
+    print("\nYOU: ",message.content,"\n")
     resp = requests.post("http://localhost:8000/message",json={"source":"discord","content":message.content})
     await message.channel.send(resp.json()["reply"])
+    print(resp.json()["reply"])
 
 client.run( os.getenv('discord_api_key') )

@@ -11,15 +11,14 @@ def rgb_to_tuya_hex(h, s, v):
 def sunrise_wakeup(light, duration_minutes=25, steps=30):
     interval = (duration_minutes * 60) / steps
 
-    # Set dim starting color BEFORE turning on, so no bright flash
     light.set_value(21, "colour")
     time.sleep(0.2)
-    light.set_value(24, rgb_to_tuya_hex(10, 1000, 10))  # very dim red
+    light.set_value(24, rgb_to_tuya_hex(10, 1000, 10))
     time.sleep(0.2)
     light.set_value(20, True)
     time.sleep(0.3)
 
-    # Phase 1: dim red -> orange/yellow, brightening slowly
+    # Phase 1
     color_steps = steps // 2
     for i in range(color_steps + 1):
         progress = i / color_steps
@@ -31,7 +30,7 @@ def sunrise_wakeup(light, duration_minutes=25, steps=30):
         light.set_value(24, color_hex)
         time.sleep(interval)
 
-    # Phase 2: transition to white, starting dim, ramping up gradually
+    # Phase 2
     light.set_value(22, 10)
     time.sleep(0.3)
     light.set_value(21, "white")
@@ -47,5 +46,10 @@ def sunrise_wakeup(light, duration_minutes=25, steps=30):
         time.sleep(0.05)
         light.set_value(23, temp)
         time.sleep(interval)
+
+
+while time.strftime("%H:%M") != "07:41":
+    time.sleep(20)
+    print(time.strftime("%H:%M"))
 
 sunrise_wakeup(light, duration_minutes=25, steps=30)

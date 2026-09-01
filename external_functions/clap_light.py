@@ -4,12 +4,13 @@ import sounddevice as sd
 import librosa
 import time
 from collections import deque
+from pathlib import Path
 
 import tinytuya
 light = tinytuya.OutletDevice('a36cb72light1945cf9235fcsy', '192.168.1.2', 'Ke;0MYt#GGtwb?+u')
 light.set_version(3.5)
 
-model = tf.saved_model.load('./yamnet_local')
+model = tf.saved_model.load(Path(__file__).parent / "yamnet_local")
 class_map_path = model.class_map_path().numpy()
 class_names = [line.split(',')[2] for line in open(class_map_path).read().splitlines()[1:]]
 clap_index = class_names.index('Clapping')
@@ -18,13 +19,13 @@ NATIVE_RATE = 44100
 TARGET_RATE = 16000
 WINDOW_SECONDS = 1.0
 BUFFER_SECONDS = 2.0
-THRESHOLD = 0.005
-COOLDOWN = 0.4        
-DOUBLE_CLAP_WINDOW = 1.0  
+THRESHOLD = 0.003
+COOLDOWN = 0.6
+DOUBLE_CLAP_WINDOW = 1.5
 
 buffer = deque(maxlen=int(BUFFER_SECONDS * NATIVE_RATE))
 
-def audio_callback(indata):
+def audio_callback(indata, frames, time_info, status):
     buffer.extend(indata[:, 0])
 
 stream = sd.InputStream(samplerate=NATIVE_RATE, channels=1, dtype='float32', callback=audio_callback)
@@ -36,7 +37,7 @@ clap_times = []
 print("Listening for claps...")
 
 while True:
-    time.sleep(0.2)
+    time.sleep(0.1)
 
     if len(buffer) < int(WINDOW_SECONDS * NATIVE_RATE):
         continue

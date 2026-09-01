@@ -4,6 +4,8 @@ import uvicorn
 import sqlite3
 import json
 import subprocess
+from speech.TTS import speak
+import threading
 
 subprocess.Popen(["python", "reminder.py"])
 
@@ -33,6 +35,7 @@ def message(data: dict):
     content = data.get("content")
     
     response = handle_message(content)
+    threading.Thread(target=speak, args=(response,), daemon=True).start()
     return {"reply": response}
 
 @app.post("/event")
@@ -50,4 +53,4 @@ def event(data: dict):
         print(f"no source named: {data.get("source")}")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, access_log=False)
