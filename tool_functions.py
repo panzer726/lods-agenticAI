@@ -3,14 +3,17 @@ import sqlite3
 import time
 import colorsys
 import dotenv
+import os
+from memory import mem_handler
+from LLM import call_model
 dotenv.load_dotenv(override=True)
 
 import tinytuya
-light = tinytuya.OutletDevice('a36cb72d1945cf9235fcsy', '192.168.1.2', 'Ke;0MYt#GGtwb?+u')
+light = tinytuya.OutletDevice('a36cb72d1945cf9235fcsy', '192.168.1.40', 'Ke;0MYt#GGtwb?+u')
 light.set_version(3.5) 
 
 from tavily import TavilyClient
-tavily_client = TavilyClient(api_key="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")
+tavily_client = TavilyClient(api_key=os.getenv('tuya_api_key'))
 
 #===========================================================================================#
 
@@ -64,6 +67,17 @@ def web_search(query):
     print(output)
     return output
 
+def save_memory(memories):
+    returned = ""
+    for memory in memories:
+        matched = mem_handler.retrieve_memory(memory,top_k=1,score_val=0.85)
+        if matched:
+            returned += f"DUPLICATE: ({memory}) and ({matched[0]['content']})"
+            continue
+        
+        mem_handler.save_memory(memory, time.strftime("%b %d %Y %H:%M"))
+        returned += f"SAVED: {memory}"
+    return returned
 
 import colorsys
 def rgbhex_to_huesat(hex_color):
@@ -116,7 +130,6 @@ def control_light(args):
                     light.set_value('22', args["bright_value"])
                     
         #============================================================================#
-        print(args)
         return "success"
 
     except Exception as e:

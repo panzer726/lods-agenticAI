@@ -1,98 +1,117 @@
 [
-    {
-        "type": "function",
-        "function": {
-            "name": "run_shell",
-            "description": "Run Windows shell to interact with operating system.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "command": {"type": "string", "description": "Windows CMD command only."}
-                },
-                "required": ["command"]
-            }
+{
+    "type": "function",
+    "function": {
+        "name": "run_shell",
+        "description": "Run Windows shell to interact with operating system.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Windows CMD command only."}
+            },
+            "required": ["command"]
         }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "manage_reminder",
-            "description": "create or finish a reminder to user",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "action": {"type": "string", "enum": ["create", "finish"]},
-                    "trigger_time": {"type": "integer", "description": "How many seconds from now until the reminder should trigger."},
-                    "content": {"type": "string", "description": "A short description of the reminder"},
-                    "reply_to_user": {"type": "string", "description": "a short affirmation"}
-                },
-                "required": ["reply_to_user", "action", "trigger_time", "content"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "view_reminders",
-            "description": "check incoming reminders",
-            "parameters": {
-                "type": "object",
-                "properties": {}
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "web_search",
-            "description": "Use a search engine to search for current information you do not have or that may have changed since your knowledge cutoff, or anywhere recency matters.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "the query to be searched"}
-                },
-            "required": ["query"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function":{
-
-    "name": "control_light",
-    "description": "Controls light. Can turn it on/off, and adjust brightness or color temperature. Only adjust settings that are mentioned.",
-    "parameters": {
-        "type": "object",
-        "properties": {
-        "device": {
-            "type": "string",
-            "enum": ["bedroom_overhead_light"],
-            "description": "Which light to control, and what lights are only available."
-        },
-        "switch_led": {
-            "type": "boolean",
-            "description": "Turn the light on (true) or off (false)."
-        },
-        "bright_value": {
-            "type": "integer",
-            "minimum": 10,
-            "maximum": 1000,
-            "description": "Brightness level, 10 (dimmest) to 1000 (brightest)."
-        },
-        "temp_value": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 1000,
-            "description": "Color temperature, 0 (warm) to 1000 (cool). do not apply unless said otherwise."
-        },
-        "colour_data": {
-            "type": "string",
-            "description": "the color, in #RRGGBB hex. do not apply unless said otherwise."
-        }
-        },
-        "required": ["device"]
     }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "manage_reminder",
+        "description": "create or finish a reminder to user",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["create", "finish"]},
+                "trigger_time": {"type": "integer", "description": "How many seconds from now until the reminder should trigger."},
+                "content": {"type": "string", "description": "A short description of the reminder"},
+                "reply_to_user": {"type": "string", "description": "a short affirmation"}
+            },
+            "required": ["reply_to_user", "action", "trigger_time", "content"]
+        }
+    }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "view_reminders",
+        "description": "check incoming reminders",
+        "parameters": {
+            "type": "object",
+            "properties": {}
+        }
+    }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "web_search",
+        "description": "Use a search engine to search for current information you do not have or that may have changed since your knowledge cutoff, or anywhere recency matters.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "the query to be searched"}
+            },
+        "required": ["query"]
+        }
+    }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "save_infos",
+        "description": "Extract durable informations from the user's message. This is used to save long-term semantic and episodic memory and will be injected into your memory using RAG.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "infos": {
+                    "type": "array",
+                    "items": {
+                    "type": "string"
+                    },
+                    "description": "a short, self-contained information."
+                }
+            },
+        "required": ["infos"],  
+        "additionalProperties": false
+        }
+    }
+},
+{
+    "type": "function",
+    "function":{
+        "name": "control_light",
+        "description": "Controls light. Can turn it on/off, and adjust brightness or color temperature. Only adjust settings that are mentioned.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "device": {
+                    "type": "string",
+                    "enum": ["bedroom_overhead_light"],
+                    "description": "Which light to control, and what lights are only available."
+                },
+                "switch_led": {
+                    "type": "boolean",
+                    "description": "Turn the light on (true) or off (false)."
+                },
+                "bright_value": {
+                    "type": "integer",
+                    "minimum": 10,
+                    "maximum": 1000,
+                    "description": "Brightness level, 10 (dimmest) to 1000 (brightest)."
+                },
+                "temp_value": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "description": "Color temperature, 0 (warm) to 1000 (cool). do not apply unless said otherwise."
+                },
+                "colour_data": {
+                    "type": "string",
+                    "description": "the color, in #RRGGBB hex. do not apply unless said otherwise."
+                }
+            },
+        "required": ["device"]
+        }
     }
 }
-  
 ]

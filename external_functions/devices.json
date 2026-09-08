@@ -1,0 +1,18 @@
+[
+    {
+        "name": "bedroom_overhead_light",
+        "id": "a36cb72d1945cf9235fcsy",
+        "key": "Ke;0MYt#GGtwb?+u",
+        "mac": "d8:fc:92:65:2f:5c",
+        "uuid": "3b270a0ed2627582",
+        "category": "dj",
+        "product_name": "Smart-Bulb-E27-wifi",
+        "product_id": "njkykgq2s2z4y2da",
+        "biz_type": 18,
+        "model": "\u3010LN\u3011AC 85-265V",
+        "sub": false,
+        "icon": "https://images.iotbing.com/smart/icon/ay1575887411375sPrMx/504eef3f6c33e74b9f143b80167b0b7e.jpg",
+        "ip": "192.168.1.40",
+        "version": "3.5"
+    }
+]

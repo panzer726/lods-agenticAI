@@ -1,5 +1,5 @@
 import tinytuya
-light = tinytuya.OutletDevice('a36cb72light1945cf9235fcsy', '192.168.1.2', 'Ke;0MYt#GGtwb?+u')
+light = tinytuya.OutletDevice('a36cb72d1945cf9235fcsy', '192.168.1.40', 'Ke;0MYt#GGtwb?+u')
 light.set_version(3.5)
 print(light.status())
 
@@ -48,7 +48,7 @@ def sunrise_wakeup(light, duration_minutes=25, steps=30):
         time.sleep(interval)
 
 
-while time.strftime("%H:%M") != "07:41":
+while time.strftime("%H:%M") != "06:00":
     time.sleep(20)
     print(time.strftime("%H:%M"))
 
